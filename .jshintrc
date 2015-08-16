@@ -1,0 +1,9 @@
+{
+    "quotmark": "single",
+    "trailing": true,
+    "browser": true,
+    "devel": true,
+    "undef": true,
+    "unused": true,
+    "node": true
+}
