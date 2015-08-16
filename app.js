@@ -24,7 +24,7 @@ function init(username) {
 		.then(function(authenticityToken) {
 			var passwords = getPossiblePasswords();
 			return asyncReduce(passwords, function(password) {
-				printNormal(password);
+				printNormal('Trying password', password);
 				return attemptLogin(username, password, authenticityToken, cookieJar);
 			});
 		})
@@ -85,7 +85,7 @@ function attemptLogin(username, password, authenticityToken, cookieJar) {
 		});
 	})
 	.catch(function(errorMessage) {
-		printWarning('Error occured while attempting', password, errorMessage);
+		printWarning('Error occured while attempting "' + password + '".', errorMessage);
 	});
 }
 
