@@ -71,8 +71,16 @@ function attemptLogin(username, password, authenticityToken, cookieJar) {
 			if (error) {
 				reject(error);
 			} else {
-				var isLoggedIn = response.statusCode === 302;
-				resolve(isLoggedIn);
+				switch (response.statusCode) {
+					case 302:
+						resolve(true);
+						break;
+					case 200:
+						resolve(false);
+						break;
+					default:
+						reject(response.statusCode);
+				}
 			}
 		});
 	})
@@ -80,6 +88,8 @@ function attemptLogin(username, password, authenticityToken, cookieJar) {
 		printWarning('Error occured while attempting', password, errorMessage);
 	});
 }
+
+
 
 function asyncReduce(items, fn) {
 	function next(index) {
