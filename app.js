@@ -18,9 +18,6 @@ function init(username) {
 	}
 
 	getAuthenticityToken(cookieJar)
-		.catch(function(error) {
-			printWarning('Could not get token', error);
-		})
 		.then(function(authenticityToken) {
 			var passwords = getPossiblePasswords();
 			return asyncReduce(passwords, function(password) {
@@ -53,6 +50,9 @@ function getAuthenticityToken(cookieJar) {
 			var authenticityToken = $('input[name="authenticity_token"]').val();
 			resolve(authenticityToken);
 		});
+	})
+	.catch(function(error) {
+		printWarning('Could not get token', error);
 	});
 }
 
